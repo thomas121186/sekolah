@@ -5,7 +5,7 @@ class nilai extends CI_Controller {
 		$this->load->model('nilai_model');
 	}
 	public function index(){
-		$data['title'] = 'News archive';
+		$data['title'] = 'Nilai siswa';
 		$data['nilai'] = $this->nilai_model->get_nilai();
 		$this->load->view('nilai/index', $data);	
 	}
