@@ -1,85 +1,33 @@
 <?php
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 class Users extends CI_Controller {
+	public function __construct(){
+		parent::__construct();
+		$this->load->model('user_model');
+	}
 
-    function  __construct() {
-        parent::__construct();
-        $this->load->model('Users_model');
-    }
-
-    function login() {
-
-        $this->form_validation->set_rules('username', 'username', 'required|xss_clean');
-        $this->form_validation->set_rules('password', 'password', 'required|xss_clean');
-
-        $this->form_validation->set_error_delimiters('', '<br/>');
-
-        if ($this->form_validation->run() == TRUE) {
-            $username = $this->input->post('username');
-            $password = $this->input->post('password');
-
-            $login_data = $this->Users_model->cek_user_login($username, $password);
-			if($login_data){
-            $session_data = array(
-                'user_id' => $login_data['id'],
-                'username' => $login_data['username'],
-                'type' => $login_data['type'],
-                'is_login' => TRUE
-            );
-			
-
-            $this->session->set_userdata($session_data);
-
-            redirect('users/dashboard');
-			
-			}else{
-				$this->session->set_flashdata('message','Login Gagal, Kombinasi username dan password salah.');
-				redirect('users/login');
-			}
-        }
-        $this->load->view('users/login');
-    }
-
-    function dashboard() {
-        $this->check_logged_in();
-        $this->load->view('users/dashboard');
-    }
-
-    function logout() {
-
-        $data = array
-            (
-            'user_id' => 0,
-            'username' => 0,
-            'type' => 0,
-            'is_login' => FALSE
-        );
-
-        $this->session->sess_destroy();
-        $this->session->unset_userdata($data);
-
-        redirect('users/login');
-    }
-
-    public function check_logged_in() {
-        if ($this->session->userdata('is_login') != TRUE) {
-            redirect('users/login', 'refresh');
-            exit();
-        }
-    }
-
-    public function is_logged_in() {
-        if ($this->session->userdata('logged_in') == TRUE) {
-            return TRUE;
-        } else {
-            return FALSE;
-        }
-    }
-
+	public function index(){
+		$data['title'] = 'News archive';
+		$data['users'] = $this->user_model->get_users();
+		$this->load->view('users/index', $data);
+	}
+	public function create(){
+		$this->load->helper('form');
+		$this->load->library('form_validation');
+		
+		$data['title'] = 'Create new user';
+		
+		$this->form_validation->set_rules('username', 'Username', 'required');
+		$this->form_validation->set_rules('password', 'Password', 'required');
+		$this->form_validation->set_rules('email', 'Email', 'required');
+		
+		if ($this->form_validation->run() === FALSE){
+			$this->load->view('users/create');
+		}
+		else{
+			$this->user_model->set_user();
+			$this->load->helper('url');
+			redirect('/users/index', 'refresh');
+		}
+	}
 }
 ?>
